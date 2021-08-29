@@ -1,11 +1,15 @@
-import type { NextPage } from 'next';
-import EventsList from '../components/Events/EventsList';
+import type { GetStaticProps, NextPage } from 'next';
+import EventsList, { EventsListProps } from '../components/Events/EventsList';
 import { getFeaturedEvents } from '../data/events-data';
 
-const Home: NextPage = () => {
+export const getStaticProps: GetStaticProps<EventsListProps> = () => {
+  return { props: { events: getFeaturedEvents() } };
+};
+
+const Home: NextPage<EventsListProps> = ({ events }) => {
   return (
     <>
-      <EventsList events={getFeaturedEvents()} />
+      <EventsList events={events} />
     </>
   );
 };
