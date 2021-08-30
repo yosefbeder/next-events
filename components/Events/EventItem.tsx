@@ -6,7 +6,7 @@ import {
 } from 'react-icons/io5';
 import Link from 'next/link';
 
-interface EventProps {
+export interface EventItemProps {
   id: string;
   image: string;
   title: string;
@@ -36,7 +36,13 @@ export const ListItem: React.FC<ListItemProps> = ({
     </span>
   </li>
 );
-const Event: React.FC<EventProps> = ({ image, title, date, location, id }) => {
+const EventItem: React.FC<EventItemProps> = ({
+  image,
+  title,
+  date,
+  location,
+  id,
+}) => {
   return (
     <div className="w-96 mx-auto rounded-lg border border-gray-200 overflow-hidden md:flex md:w-full">
       <img
@@ -61,4 +67,4 @@ const Event: React.FC<EventProps> = ({ image, title, date, location, id }) => {
   );
 };
 
-export default Event;
+export default EventItem;

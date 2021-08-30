@@ -1,46 +1,62 @@
-import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
+import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from 'next';
 import React from 'react';
-import { getAllEvents, getEventById } from '../../data/events-data';
-import { ListItem } from '../../components/Events/Event';
+import { ListItem } from '../../components/Events/EventItem';
 import {
   IoCalendarOutline as CalendarIcon,
-  IoMapOutline as MapIcon,
+  IoLocationOutline as MapIcon,
   IoAlertCircleOutline as AlertIcon,
 } from 'react-icons/io5';
+import { BsHash as HashIcon } from 'react-icons/bs';
 import { ParsedUrlQuery } from 'querystring';
+import { EventType } from '../../types';
+import transformToArray from '../../utils/transform-to-array';
 
 interface ParamType extends ParsedUrlQuery {
   id: string;
 }
 
-export const getStaticPaths: GetStaticPaths<ParamType> = () => {
+export const getStaticPaths: GetStaticPaths<ParamType> = async () => {
+  const req = await fetch(
+    'https://next-events-d38eb-default-rtdb.firebaseio.com/events.json',
+  );
+
+  const data = await req.json();
+
+  const paths = (transformToArray(data) as EventType[]).map(({ id }) => ({
+    params: { id },
+  }));
+
   return {
-    paths: getAllEvents().map(({ id }) => ({
-      params: {
-        id,
-      },
-    })),
-    fallback: false,
+    paths,
+    fallback: 'blocking',
   };
 };
 
-export const getStaticProps: GetStaticProps<EventProps, ParamType> = ({
+export const getStaticProps: GetStaticProps<EventType, ParamType> = async ({
   params,
 }) => {
-  return { props: getEventById(params!.id)! };
+  const req = await fetch(
+    'https://next-events-d38eb-default-rtdb.firebaseio.com/events.json',
+  );
+
+  const data = await req.json();
+
+  const event = (transformToArray(data) as EventType[]).find(
+    event => event.id === params!.id,
+  );
+
+  if (!event)
+    return {
+      notFound: true,
+    };
+
+  return {
+    props: event,
+    revalidate: 60,
+  };
 };
 
-interface EventProps {
-  id: string;
-  title: string;
-  description: string;
-  location: string;
-  date: string;
-  image: string;
-  isFeatured: boolean;
-}
-
-const Event: NextPage<EventProps> = ({
+const Event = ({
   id,
   title,
   description,
@@ -48,7 +64,7 @@ const Event: NextPage<EventProps> = ({
   date,
   image,
   isFeatured,
-}) => {
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
   return (
     <>
       <img
@@ -56,8 +72,9 @@ const Event: NextPage<EventProps> = ({
         src={image}
         alt={title}
       />
-      <h2 className="header-2">{title}</h2>
+      <h2 className="header-1">{title}</h2>
       <ul className="space-y-2">
+        <ListItem size="lg" icon={HashIcon} content={id} />
         <ListItem size="lg" icon={CalendarIcon} content={date} />
         <ListItem size="lg" icon={MapIcon} content={location} />
         {!isFeatured && (
@@ -68,7 +85,7 @@ const Event: NextPage<EventProps> = ({
           />
         )}
       </ul>
-      <p className="paragraph-1">{description}</p>
+      <p className="paragraph-1 max-w-screen-sm">{description}</p>
     </>
   );
 };

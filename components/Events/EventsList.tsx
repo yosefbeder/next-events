@@ -1,21 +1,18 @@
 import React from 'react';
-import Event from './Event';
+import EventItem, { EventItemProps } from './EventItem';
 
 export interface EventsListProps {
-  events: {
-    id: string;
-    title: string;
-    location: string;
-    date: string;
-    image: string;
-  }[];
+  events: EventItemProps[];
 }
 
 const EventsList: React.FC<EventsListProps> = ({ events }) => {
+  if (events.length === 0)
+    return <h3 className="header-3 w-max mx-auto">No event was found :(</h3>;
+
   return (
     <div className="w-full space-y-4">
       {events.map(({ id, ...restProps }) => (
-        <Event key={id} id={id} {...restProps} />
+        <EventItem key={id} id={id} {...restProps} />
       ))}
     </div>
   );
