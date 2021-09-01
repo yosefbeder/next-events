@@ -20,11 +20,7 @@ const SelectGroup: React.FC<SelectGroupProps> = ({
   return (
     <div className="flex space-x-2 items-center  text-gray-600">
       <span className="text-lg capitalize">{label}</span>
-      <select
-        className="border border-gray-200 hover:border-gray-400 focus:border-gray-400 px-2 py-2 rounded-lg"
-        value={value}
-        onChange={onChange}
-      >
+      <select className="input" value={value} onChange={onChange}>
         {labels.map((label, index) => (
           <option key={index} value={values[index]}>
             {label}

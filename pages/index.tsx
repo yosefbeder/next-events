@@ -3,6 +3,8 @@ import EventsList, { EventsListProps } from '../components/Events/EventsList';
 import { EventType } from '../types';
 import transformToArray from '../utils/transform-to-array';
 import transformToEventItemProps from '../utils/transform-to-event-item-props';
+import Head from 'next/head';
+import NewsLetterForm from '../components/NewsLetterForm';
 
 export const getStaticProps: GetStaticProps<EventsListProps> = async () => {
   const req = await fetch(
@@ -18,14 +20,22 @@ export const getStaticProps: GetStaticProps<EventsListProps> = async () => {
   return {
     props: {
       events,
-      revalidate: 60,
     },
+    revalidate: 60,
   };
 };
 
 const Home = ({ events }: InferGetStaticPropsType<typeof getStaticProps>) => {
   return (
     <>
+      <Head>
+        <title>Next Events!</title>
+        <meta
+          name="description"
+          content="A small app where you can find some events to attend."
+        />
+      </Head>
+      <NewsLetterForm />
       <EventsList events={events} />
     </>
   );

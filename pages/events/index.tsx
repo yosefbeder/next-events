@@ -7,6 +7,7 @@ import FilterForm from '../../components/FilterForm';
 import { EventType } from '../../types';
 import transformToArray from '../../utils/transform-to-array';
 import transformToEventItemProps from '../../utils/transform-to-event-item-props';
+import Head from 'next/head';
 
 export const getStaticProps: GetStaticProps<EventsListProps> = async () => {
   const req = await fetch(
@@ -30,6 +31,13 @@ const AllEvents = ({
 }: InferGetStaticPropsType<typeof getStaticProps>) => {
   return (
     <>
+      <Head>
+        <title>All Events</title>
+        <meta
+          name="description"
+          content="A small app where you can find some events to attend."
+        />
+      </Head>
       <FilterForm />
       <EventsList events={events} />
     </>

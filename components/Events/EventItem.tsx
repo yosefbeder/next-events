@@ -5,6 +5,7 @@ import {
   IoMapOutline as MapIcon,
 } from 'react-icons/io5';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export interface EventItemProps {
   id: string;
@@ -44,12 +45,25 @@ const EventItem: React.FC<EventItemProps> = ({
   id,
 }) => {
   return (
-    <div className="w-96 mx-auto rounded-lg border border-gray-200 overflow-hidden md:flex md:w-full">
-      <img
-        className="h-64 w-full object-cover md:w-1/3"
-        src={image}
-        alt={title}
-      />
+    <div className="card w-96 mx-auto overflow-hidden md:flex md:w-full">
+      <div className="md:hidden">
+        <Image
+          className="h-64 w-full object-cover "
+          src={image}
+          alt={title}
+          width={385}
+          height={260}
+        />
+      </div>
+      <div className="hidden md:block">
+        <Image
+          className="object-cover"
+          src={image}
+          alt={title}
+          width={260}
+          height={260}
+        />
+      </div>
       <div className="p-4 md:flex md:flex-col flex-1">
         <h3 className="header-3 mb-4 md:hidden">{title}</h3>
         <h2 className="header-2 hidden md:block md:mb-4">{title}</h2>

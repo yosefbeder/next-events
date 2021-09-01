@@ -10,6 +10,10 @@ import { BsHash as HashIcon } from 'react-icons/bs';
 import { ParsedUrlQuery } from 'querystring';
 import { EventType } from '../../types';
 import transformToArray from '../../utils/transform-to-array';
+import Head from 'next/head';
+import Image from 'next/image';
+import NewCommentForm from '../../components/Comments/NewCommentForm';
+import CommentsList from '../../components/Comments/CommentsList';
 
 interface ParamType extends ParsedUrlQuery {
   id: string;
@@ -56,6 +60,11 @@ export const getStaticProps: GetStaticProps<EventType, ParamType> = async ({
   };
 };
 
+const dummyComments = [
+  { author: 'Yosef', content: 'This is so cool' },
+  { author: 'Mostafa', content: "This isn't so cool" },
+];
+
 const Event = ({
   id,
   title,
@@ -67,8 +76,14 @@ const Event = ({
 }: InferGetStaticPropsType<typeof getStaticProps>) => {
   return (
     <>
-      <img
-        className="w-full h-80 rounded-lg shadow-lg object-cover sm:h-96"
+      <Head>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+      </Head>
+      <Image
+        width={765}
+        height={385}
+        className="w-full h-80 rounded-lg object-cover sm:h-96"
         src={image}
         alt={title}
       />
@@ -86,6 +101,12 @@ const Event = ({
         )}
       </ul>
       <p className="paragraph-1 max-w-screen-sm">{description}</p>
+      <h2 className="header-2">Comments</h2>
+      <hr />
+      <h3 className="header-3">Add a comment</h3>
+      <NewCommentForm />
+      <h3 className="header-3">All comments</h3>
+      <CommentsList items={dummyComments} />
     </>
   );
 };
