@@ -5,11 +5,8 @@ import EventsList, {
   EventsListProps,
 } from '../../components/Events/EventsList';
 import months from '../../data/months';
-import transformToArray from '../../utils/transform-to-array';
-import { EventType } from '../../types';
-import transformToEventItemProps from '../../utils/transform-to-event-item-props';
-import { useRouter } from 'next/dist/client/router';
 import Head from 'next/head';
+import { getEvents } from '../api/events';
 
 interface SlugType extends ParsedUrlQuery {
   slug: string[];
@@ -22,25 +19,13 @@ export const getServerSideProps: GetServerSideProps<
   const year = Number(params!.slug[0]);
   const month = Number(params!.slug[1]);
 
-  if (!year || month === undefined) {
+  if (!year || month === undefined || month > 11) {
     return {
       notFound: true,
     };
   }
 
-  const req = await fetch(
-    'https://next-events-d38eb-default-rtdb.firebaseio.com/events.json',
-  );
-
-  const data = await req.json();
-
-  const events = (transformToArray(data) as EventType[])
-    .filter(event => {
-      const date = new Date(event.date);
-
-      return date.getFullYear() === year && date.getMonth() === month;
-    })
-    .map(event => transformToEventItemProps(event));
+  const events = getEvents({ year, month });
 
   return {
     props: {

@@ -8,25 +8,21 @@ import {
 } from 'react-icons/io5';
 import { BsHash as HashIcon } from 'react-icons/bs';
 import { ParsedUrlQuery } from 'querystring';
-import { EventType } from '../../types';
-import transformToArray from '../../utils/transform-to-array';
+import { CommentType, EventType } from '../../types';
 import Head from 'next/head';
 import Image from 'next/image';
 import NewCommentForm from '../../components/Comments/NewCommentForm';
 import CommentsList from '../../components/Comments/CommentsList';
+import { getEvent } from '../api/events/[id]';
+import { getEvents } from '../api/events';
+import useSWR from 'swr';
 
 interface ParamType extends ParsedUrlQuery {
   id: string;
 }
 
-export const getStaticPaths: GetStaticPaths<ParamType> = async () => {
-  const req = await fetch(
-    'https://next-events-d38eb-default-rtdb.firebaseio.com/events.json',
-  );
-
-  const data = await req.json();
-
-  const paths = (transformToArray(data) as EventType[]).map(({ id }) => ({
+export const getStaticPaths: GetStaticPaths<ParamType> = () => {
+  const paths = getEvents().map(({ id }) => ({
     params: { id },
   }));
 
@@ -36,34 +32,32 @@ export const getStaticPaths: GetStaticPaths<ParamType> = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps<EventType, ParamType> = async ({
+export const getStaticProps: GetStaticProps<EventType, ParamType> = ({
   params,
 }) => {
-  const req = await fetch(
-    'https://next-events-d38eb-default-rtdb.firebaseio.com/events.json',
-  );
+  try {
+    const event = getEvent(params!.id);
 
-  const data = await req.json();
-
-  const event = (transformToArray(data) as EventType[]).find(
-    event => event.id === params!.id,
-  );
-
-  if (!event)
+    return {
+      props: event,
+      revalidate: 60,
+    };
+  } catch (err) {
     return {
       notFound: true,
     };
-
-  return {
-    props: event,
-    revalidate: 60,
-  };
+  }
 };
 
-const dummyComments = [
-  { author: 'Yosef', content: 'This is so cool' },
-  { author: 'Mostafa', content: "This isn't so cool" },
-];
+const fetcher = async (url: string) => {
+  const res = await fetch(url).then(req => req.json());
+
+  if (!res.success) {
+    throw new Error(res.error);
+  } else {
+    return res.data as CommentType[];
+  }
+};
 
 const Event = ({
   id,
@@ -74,6 +68,10 @@ const Event = ({
   image,
   isFeatured,
 }: InferGetStaticPropsType<typeof getStaticProps>) => {
+  const { data, error } = useSWR(`/api/events/${id}/comments`, fetcher, {
+    refreshInterval: 1000,
+  });
+
   return (
     <>
       <Head>
@@ -104,9 +102,24 @@ const Event = ({
       <h2 className="header-2">Comments</h2>
       <hr />
       <h3 className="header-3">Add a comment</h3>
-      <NewCommentForm />
+      <NewCommentForm eventId={id} />
       <h3 className="header-3">All comments</h3>
-      <CommentsList items={dummyComments} />
+      {(() => {
+        if (error) {
+          console.log(error);
+          return (
+            <p className="paragraph-1">
+              Failed to load the comments
+              <br />
+              <span className="text-sm">error message: {error.message}</span>
+            </p>
+          );
+        }
+        if (!data) return <p className="paragraph-1">...Loading</p>;
+        if (data) {
+          return <CommentsList items={data} />;
+        }
+      })()}
     </>
   );
 };
